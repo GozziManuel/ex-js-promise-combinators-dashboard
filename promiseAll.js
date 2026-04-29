@@ -20,27 +20,18 @@ async function getDashboardData(query) {
     CityListWeather,
     CityListAirport,
   ]);
-  if (
-    wheater.temperature === undefined ||
-    weather.weather_description === undefined ||
-    dest.name === undefined ||
-    dest.country === undefined ||
-    airport.name === undefined
-  ) {
-    return {
-      city: null,
-      country: null,
-      temperature: null,
-      weather: null,
-      airport: null,
-    };
-  }
+
   return {
-    city: dest[0].name,
-    country: dest[0].country,
-    temperature: wheater[0].temperature,
-    weather: wheater[0].weather_description,
-    airport: airport[0].name,
+    city: dest && dest.length > 0 ? dest[0].name : null,
+
+    country: dest && dest.length > 0 ? dest[0].country : null,
+
+    temperature: wheater && wheater.length > 0 ? wheater[0].temperature : null,
+
+    weather:
+      wheater && wheater.length > 0 ? wheater[0].weather_description : null,
+
+    airport: airport && airport.length > 0 ? airport[0].name : null,
   };
 }
 
