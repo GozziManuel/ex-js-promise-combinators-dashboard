@@ -10,7 +10,7 @@ async function getDashboardData(query) {
       `http://localhost:3333/destinations?search=${query}`,
     );
     const CityListWeather = handleAsync(
-      `http://localhost:3333false/weathers?search=${query}`,
+      `http://localhost:3333/weathers?search=${query}`,
     );
     const CityListAirport = handleAsync(
       `http://localhost:3333/airports?search=${query}`,
@@ -20,9 +20,9 @@ async function getDashboardData(query) {
 
     console.log([dest, wheater, airport]);
     if (
-      wheater.status === "fulfilled" ||
-      airport.status === "fulfilled" ||
-      dest.status === "fulfilled"
+      wheater.status !== "fulfilled" ||
+      airport.status !== "fulfilled" ||
+      dest.status !== "fulfilled"
     ) {
       console.error("rejected found");
 
@@ -54,10 +54,18 @@ async function getDashboardData(query) {
   }
 }
 
-getDashboardData("")
+getDashboardData("london")
   .then((data) => {
     console.log("Dasboard data:", data);
-    if (data.temperature || data.weather_description) {
+    if (
+      data.city === null &&
+      data.country === null &&
+      data.temperature === null &&
+      data.weather === null &&
+      data.airport === null
+    ) {
+      console.error(" Api result are not valid");
+    } else if (data.temperature || data.weather) {
       console.log(
         `${data.city} is in ${data.country}.\n` +
           `Today there are ${data.temperature} degrees and the weather is ${data.weather}.\n` +
