@@ -5,37 +5,56 @@ async function handleAsync(url) {
 }
 
 async function getDashboardData(query) {
-  const CityList = await handleAsync(
-    `http://localhost:3333/destinations?search=${query}`,
-  );
-  const CityListWeather = await handleAsync(
-    `http://localhost:3333/weathers?search=${query}`,
-  );
-  const CityListAirport = await handleAsync(
-    `http://localhost:3333/airports?search=${query}`,
-  );
+  try {
+    const CityList = handleAsync(
+      `http://localhost:3333/destinations?search=${query}`,
+    );
+    const CityListWeather = handleAsync(
+      `http://localhost:3333false/weathers?search=${query}`,
+    );
+    const CityListAirport = handleAsync(
+      `http://localhost:3333/airports?search=${query}`,
+    );
+    const promises = [CityList, CityListWeather, CityListAirport];
+    const [dest, wheater, airport] = await Promise.allSettled(promises);
 
-  const [dest, wheater, airport] = await Promise.all([
-    CityList,
-    CityListWeather,
-    CityListAirport,
-  ]);
+    console.log([dest, wheater, airport]);
+    if (
+      wheater.status === "fulfilled" ||
+      airport.status === "fulfilled" ||
+      dest.status === "fulfilled"
+    ) {
+      console.error("rejected found");
 
-  return {
-    city: dest && dest.length > 0 ? dest[0].name : null,
+      return {
+        city: null,
 
-    country: dest && dest.length > 0 ? dest[0].country : null,
+        country: null,
 
-    temperature: wheater && wheater.length > 0 ? wheater[0].temperature : null,
+        temperature: null,
 
-    weather:
-      wheater && wheater.length > 0 ? wheater[0].weather_description : null,
+        weather: null,
 
-    airport: airport && airport.length > 0 ? airport[0].name : null,
-  };
+        airport: null,
+      };
+    }
+    return {
+      city: dest?.value?.[0]?.name ?? null,
+
+      country: dest?.value?.[0]?.country ?? null,
+
+      temperature: wheater?.value?.[0]?.temperature ?? null,
+
+      weather: wheater?.value?.[0]?.weather_description ?? null,
+
+      airport: airport?.value?.[0]?.name ?? null,
+    };
+  } catch (error) {
+    throw new Error("errore dei dati");
+  }
 }
 
-getDashboardData("Vienna")
+getDashboardData("")
   .then((data) => {
     console.log("Dasboard data:", data);
     if (data.temperature || data.weather_description) {
@@ -44,10 +63,11 @@ getDashboardData("Vienna")
           `Today there are ${data.temperature} degrees and the weather is ${data.weather}.\n` +
           `The main airport is ${data.airport}.\n`,
       );
+    } else {
+      console.log(
+        `${data.city} is in ${data.country}.\n` +
+          `The main airport is ${data.airport}.\n`,
+      );
     }
-    console.log(
-      `${data.city} is in ${data.country}.\n` +
-        `The main airport is ${data.airport}.\n`,
-    );
   })
   .catch((error) => console.error(error));
